@@ -1,7 +1,9 @@
 @extends('layouts.magazine')
-@section('title', isset($category) ? $category->name.' — Man\'s World Bangladesh' : 'Stories — Man\'s World Bangladesh')
+@section('title', isset($category) ? $category->display_name.' — Man\'s World Bangladesh' : 'Stories — Man\'s World Bangladesh')
 @section('content')
-<main class="container listing-page"><div class="eyebrow">THE MW JOURNAL</div><div class="listing-title-row"><div><h1>{{ isset($category) ? $category->name : 'Stories worth your time' }}</h1><p>{{ isset($category) ? $category->description : 'Fresh perspective across the things that make a life.' }}</p></div><form class="listing-search" action="{{ route('articles.index') }}"><input name="q" value="{{ request('q') }}" placeholder="Search stories"><button>Search</button></form></div>
-<div class="category-pills"><a href="{{ route('articles.index') }}">All stories</a>@foreach($categories as $item)<a class="{{ isset($category) && $category->id === $item->id ? 'active' : '' }}" href="{{ route('categories.show', $item) }}">{{ $item->name }}</a>@endforeach</div>
-<div class="row g-4">@forelse($articles as $article)<div class="col-md-6 col-lg-4"><x-story-card :article="$article" /></div>@empty<div class="col-12 py-5"><p>No stories found. Try another search.</p></div>@endforelse</div><div class="mt-5">{{ $articles->links() }}</div></main>
+<main class="container listing-page {{ isset($category) ? 'pt-0' : '' }}"><div class="eyebrow">THE MW JOURNAL</div><div class="listing-title-row"><div><h1>{{ isset($category) ? $category->display_name : 'Stories worth your time' }}</h1><p>{{ isset($category) ? $category->description : 'Fresh perspective across the things that make a life.' }}</p></div><form class="listing-search" action="{{ route('articles.index') }}"><input name="q" value="{{ request('q') }}" placeholder="Search stories"><button>Search</button></form></div>
+@unless(isset($category))
+<div class="category-pills"><a href="{{ route('articles.index') }}">All stories</a>@foreach($categories as $item)<span class="category-pill-group"><a class="category-root-pill {{ isset($category) && $category->id === $item->id ? 'active' : '' }}" href="{{ $item->url }}">{{ $item->name }}</a>@foreach($item->children as $child)<a class="category-child-pill {{ isset($category) && $category->id === $child->id ? 'active' : '' }}" href="{{ $child->url }}">{{ $child->name }}</a>@endforeach</span>@endforeach</div>
+@endunless
+<div class="row g-4">@forelse($articles as $article)<div class="col-md-6 col-lg-4"><x-story-card :article="$article" /></div>@empty<div class="col-12 py-5"><p>No stories found. Try another search.</p></div>@endforelse</div><div class="mt-5">{{ $articles->links('pagination::bootstrap-5') }}</div></main>
 @endsection

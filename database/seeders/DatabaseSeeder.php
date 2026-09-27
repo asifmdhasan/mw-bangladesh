@@ -12,9 +12,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::updateOrCreate(['email' => 'editor@mansworldbd.test'], [
-            'name' => 'MW Editorial', 'role' => 'admin', 'password' => Hash::make('password'),
+        $admin = User::updateOrCreate(['email' => 'admin@example.com'], [
+            'name' => 'MW Admin', 'role' => 'admin', 'password' => Hash::make('password123'),
         ]);
+
+        $this->call(CategorySeeder::class);
 
         $stories = [
             ['Culture', 'culture', 'The new Dhaka sound is being built one small room at a time', 'Independent musicians are turning intimate listening rooms into the city’s most exciting cultural spaces.', 'A new generation of independent musicians is building a scene on its own terms. Across the city, small listening rooms and late-night sessions are bringing strangers together around fresh sounds.\n\nThe rooms may be modest, but the ambition is not. Artists are experimenting with local instruments, electronic textures and stories rooted in everyday life. For audiences, the appeal is simple: discovery, closeness and a night that feels like it belongs to the city.'],

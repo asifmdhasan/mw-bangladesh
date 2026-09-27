@@ -9,7 +9,7 @@
             </div>
             <div class="carousel-inner">
                 @forelse($spotlight as $index => $article)
-                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}"><a class="spotlight-slide" href="{{ route('articles.show', $article) }}" style="background-image:url('{{ $article->image_src }}')"><span class="spotlight-shade"></span><span class="spotlight-caption"><span class="spotlight-kicker">SPOTLIGHT <i>·</i> {{ strtoupper($article->category->name) }}</span><strong>{{ $article->title }}</strong><span class="spotlight-read">Read story <b>↗</b></span></span></a></div>
+                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}"><a class="spotlight-slide" href="{{ route('articles.show', $article) }}" style="background-image:url('{{ $article->image_src }}')"><span class="spotlight-shade"></span><span class="spotlight-caption"><span class="spotlight-kicker">SPOTLIGHT <i>·</i> {{ strtoupper($article->category->display_name) }}</span><strong>{{ $article->title }}</strong><span class="spotlight-read">Read story <b>↗</b></span></span></a></div>
                 @empty
                     <div class="carousel-item active"><div class="spotlight-empty">Stories are coming soon.</div></div>
                 @endforelse
@@ -29,10 +29,10 @@
     @foreach($sections as $section)
         @php($sectionId = strtolower($section['title']))
         <section class="container story-section" id="{{ $sectionId }}">
-            <div class="section-heading"><h2>{{ $section['title'] }}</h2><a href="{{ $section['category'] ? route('categories.show', $section['category']) : route('articles.index') }}">View all <span>›</span></a></div>
+            <div class="section-heading"><h2>{{ $section['title'] }}</h2><a href="{{ $section['category'] ? $section['category']->url : route('articles.index') }}">View all <span>›</span></a></div>
             <div class="row g-4 story-grid">
                 @foreach($section['articles'] as $article)<div class="col-6 col-lg-3"><x-story-card :article="$article" /></div>@endforeach
-                <div class="col-6 col-lg-3"><a class="see-all-card" href="{{ $section['category'] ? route('categories.show', $section['category']) : route('articles.index') }}"><span class="see-all-arrow">›</span><strong>See All</strong></a></div>
+                <div class="col-6 col-lg-3"><a class="see-all-card" href="{{ $section['category'] ? $section['category']->url : route('articles.index') }}"><span class="see-all-arrow">›</span><strong>See All</strong></a></div>
             </div>
         </section>
     @endforeach

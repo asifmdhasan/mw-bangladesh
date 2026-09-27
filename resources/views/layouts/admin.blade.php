@@ -13,7 +13,7 @@
 </head>
 <body class="admin-shell">
     <aside class="admin-sidebar" id="adminSidebar">
-        <a class="admin-brand" href="{{ route('admin.dashboard') }}"><span>MW</span><small>MAN'S WORLD <b>·</b> ADMIN</small></a>
+        <a class="admin-brand" href="{{ route('admin.dashboard') }}">@if(!empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">@else<span>MW</span><small>MAN'S WORLD <b>·</b> ADMIN</small>@endif</a>
         <div class="admin-side-label">WORKSPACE</div>
         <nav class="admin-menu">
             <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2"></i> Dashboard</a>

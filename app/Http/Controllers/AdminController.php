@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -48,12 +49,12 @@ class AdminController extends Controller
         if (request('status') === 'draft') $stories->whereNull('published_at');
         if (request()->filled('category_id')) $stories->whereHas('categories', fn ($query) => $query->whereKey(request('category_id')));
 
-        return view('admin.dashboard', ['articles' => $stories->paginate(15)->withQueryString(), 'categories' => Category::orderBy('name')->get(), 'articleCount' => Article::count(), 'publishedCount' => Article::whereNotNull('published_at')->count(), 'subscriberCount' => DB::table('newsletter_subscribers')->count(), 'categoryCount' => Category::count(), 'userCount' => User::count()]);
+        return view('admin.dashboard', ['articles' => $stories->paginate(15)->withQueryString(), 'categories' => $this->categoryTreeItems(), 'articleCount' => Article::count(), 'publishedCount' => Article::whereNotNull('published_at')->count(), 'subscriberCount' => DB::table('newsletter_subscribers')->count(), 'categoryCount' => Category::count(), 'userCount' => User::count()]);
     }
 
-    public function create(): View { return view('admin.create', ['categories' => Category::orderBy('name')->get(), 'categoryTreeItems' => $this->categoryTreeItems(), 'allCategories' => Category::orderBy('name')->get()]); }
+    public function create(): View { return view('admin.create', ['categories' => Category::all(), 'categoryTreeItems' => $this->categoryTreeItems(), 'allCategories' => $this->categoryTreeItems()]); }
 
-    public function edit(Article $article): View { return view('admin.create', ['article' => $article->load(['images', 'categories', 'tags']), 'categories' => Category::orderBy('name')->get(), 'categoryTreeItems' => $this->categoryTreeItems(), 'allCategories' => Category::orderBy('name')->get()]); }
+    public function edit(Article $article): View { return view('admin.create', ['article' => $article->load(['images', 'categories', 'tags']), 'categories' => Category::all(), 'categoryTreeItems' => $this->categoryTreeItems(), 'allCategories' => $this->categoryTreeItems()]); }
 
     public function store(Request $request): RedirectResponse
     {
@@ -222,30 +223,36 @@ class AdminController extends Controller
         return implode('; ', $safe);
     }
 
-    public function categories(): View { return view('admin.categories', ['categories' => Category::with(['parents'])->withCount('articles')->orderBy('name')->paginate(20), 'allCategories' => Category::orderBy('name')->get()]); }
+    public function categories(): View
+    {
+        $categories = Category::with('parent')->withCount('articles')->get()->keyBy('id');
+        $items = $this->categoryTreeItems($categories);
+        foreach ($items as &$item) $item['descendant_ids'] = $this->categoryDescendantIds($item['category']->id, $categories);
+        unset($item);
+        return view('admin.categories', ['categories' => $items, 'allCategories' => $items]);
+    }
 
     public function updateCategory(Request $request, Category $category): RedirectResponse
     {
+        $parentId = $request->input('parent_id') ?: null;
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:80', 'unique:categories,name,'.$category->id],
+            'name' => ['required', 'string', 'max:80', Rule::unique('categories', 'name')->where(fn ($query) => $parentId ? $query->where('parent_id', $parentId) : $query->whereNull('parent_id'))->ignore($category->id)],
             'description' => ['nullable', 'string', 'max:240'],
-            'parent_ids' => ['nullable', 'array'],
-            'parent_ids.*' => ['integer', 'distinct', 'exists:categories,id', 'not_in:'.$category->id],
+            'parent_id' => ['nullable', 'integer', 'exists:categories,id', 'not_in:'.$category->id],
         ]);
-        $parentIds = $data['parent_ids'] ?? [];
-        if ($this->wouldCreateCategoryCycle($category->id, $parentIds)) {
-            return back()->withErrors(['parent_ids' => 'That parent selection would create a category loop.'])->withInput();
+        if ($parentId && $this->isCategoryDescendant((int) $parentId, $category->id)) {
+            return back()->withErrors(['parent_id' => 'That parent would create a circular category hierarchy.'])->withInput();
         }
+        $data['parent_id'] = $parentId;
         $data['slug'] = $this->makeCategorySlug($data['name'], $category->id);
-        unset($data['parent_ids']);
         $category->update($data);
-        $category->parents()->sync($parentIds);
         return back()->with('status', 'Category updated.');
     }
 
     public function destroyCategory(Category $category): RedirectResponse
     {
         if ($category->articles()->exists()) return back()->withErrors(['category' => 'Move or delete this category’s stories before removing it.']);
+        if ($category->children()->exists()) return back()->withErrors(['category' => 'Move or delete this category’s child categories before removing it.']);
         $category->delete(); return back()->with('status', 'Category deleted.');
     }
 
@@ -277,79 +284,87 @@ class AdminController extends Controller
 
     public function updateSettings(Request $request): RedirectResponse
     {
-        $data = $request->validate(['site_title' => ['required', 'string', 'max:120'], 'tagline' => ['nullable', 'string', 'max:240'], 'ga_measurement_id' => ['nullable', 'regex:/^G-[A-Z0-9]+$/i'], 'adsense_publisher_id' => ['nullable', 'regex:/^ca-pub-[0-9]+$/'], 'facebook_url' => ['nullable', 'url', 'max:500'], 'instagram_url' => ['nullable', 'url', 'max:500'], 'youtube_url' => ['nullable', 'url', 'max:500']]);
+        $data = $request->validate(['site_title' => ['required', 'string', 'max:120'], 'tagline' => ['nullable', 'string', 'max:240'], 'ga_measurement_id' => ['nullable', 'regex:/^G-[A-Z0-9]+$/i'], 'adsense_publisher_id' => ['nullable', 'regex:/^ca-pub-[0-9]+$/'], 'facebook_url' => ['nullable', 'url', 'max:500'], 'instagram_url' => ['nullable', 'url', 'max:500'], 'youtube_url' => ['nullable', 'url', 'max:500'], 'site_logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,svg,webp', 'max:5120']]);
+        $logoPath = null;
+        if ($request->hasFile('site_logo')) {
+            $oldLogo = DB::table('site_settings')->where('key', 'site_logo')->value('value');
+            $image = $request->file('site_logo');
+            $fileName = Str::uuid().'.'.$image->guessExtension();
+            File::ensureDirectoryExists(public_path('uploads/site'));
+            $image->move(public_path('uploads/site'), $fileName);
+            $logoPath = 'uploads/site/'.$fileName;
+            DB::table('site_settings')->updateOrInsert(['key' => 'site_logo'], ['value' => $logoPath, 'updated_at' => now(), 'created_at' => now()]);
+            if ($oldLogo && str_starts_with($oldLogo, 'uploads/site/') && File::exists(public_path($oldLogo))) File::delete(public_path($oldLogo));
+        }
+        unset($data['site_logo']);
         foreach ($data as $key => $value) DB::table('site_settings')->updateOrInsert(['key' => $key], ['value' => $value, 'updated_at' => now(), 'created_at' => now()]);
         return back()->with('status', 'Site settings saved.');
     }
 
     public function storeCategory(Request $request)
     {
+        $parentId = $request->input('parent_id') ?: null;
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:80', 'unique:categories,name'],
+            'name' => ['required', 'string', 'max:80', Rule::unique('categories', 'name')->where(fn ($query) => $parentId ? $query->where('parent_id', $parentId) : $query->whereNull('parent_id'))],
             'description' => ['nullable', 'string', 'max:240'],
-            'parent_ids' => ['nullable', 'array'],
-            'parent_ids.*' => ['integer', 'distinct', 'exists:categories,id'],
+            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
         ]);
 
-        $parentIds = $data['parent_ids'] ?? [];
         $slug = $this->makeCategorySlug($data['name']);
-
-        $category = Category::create(['name' => $data['name'], 'description' => $data['description'] ?? null, 'slug' => $slug]);
-        if ($this->wouldCreateCategoryCycle($category->id, $parentIds)) {
-            $category->delete();
-            return response()->json(['message' => 'That parent selection would create a category loop.'], 422);
-        }
-        $category->parents()->sync($parentIds);
+        $category = Category::create(['name' => $data['name'], 'description' => $data['description'] ?? null, 'slug' => $slug, 'parent_id' => $parentId]);
         if (! $request->expectsJson()) return redirect()->route('admin.categories.index')->with('status', 'Category added.');
-        return response()->json(['id' => $category->id, 'name' => $category->name, 'slug' => $category->slug, 'message' => 'Category added.']);
+        $items = $this->categoryTreeItems();
+        $item = collect($items)->first(fn ($item) => $item['category']->id === $category->id);
+        return response()->json(['id' => $category->id, 'name' => $category->name, 'slug' => $category->slug, 'parent_id' => $category->parent_id, 'path' => $item['path'], 'depth' => $item['depth'], 'message' => 'Category added.']);
     }
 
     private function makeCategorySlug(string $name, ?int $ignoreId = null): string
     {
-        $base = Str::slug($name, '_') ?: 'category';
-        $slug = $base;
-        $suffix = 2;
-        while (Category::where('slug', $slug)->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))->exists()) {
-            $slug = $base.'_'.$suffix++;
-        }
-        return $slug;
+        return Category::uniqueSlug($name, $ignoreId);
     }
 
-    private function categoryTreeItems(): array
+    private function categoryTreeItems($categories = null): array
     {
-        $categories = Category::with('parents')->orderBy('name')->get();
+        $categories ??= Category::with('children')->orderBy('name')->get()->keyBy('id');
+        $categories = $categories->sortBy('name')->values();
         $items = [];
-        $walk = function (int $parentId, int $depth, array $path = []) use (&$walk, &$items, $categories): void {
-            foreach ($categories->filter(fn (Category $category) => $category->parents->contains('id', $parentId)) as $category) {
-                if (in_array($category->id, $path, true)) continue;
-                $items[] = ['category' => $category, 'depth' => $depth];
-                $walk($category->id, $depth + 1, [...$path, $category->id]);
+        $walk = function (Category $parent, int $depth, string $path, array $ancestors = []) use (&$walk, &$items, $categories): void {
+            if (in_array($parent->id, $ancestors, true)) return;
+            $path = $path === '' ? $parent->name : $path.' / '.$parent->name;
+            $items[] = ['category' => $parent, 'depth' => $depth, 'path' => $path];
+            foreach ($categories->where('parent_id', $parent->id)->sortBy('name') as $child) {
+                $walk($child, $depth + 1, $path, [...$ancestors, $parent->id]);
             }
         };
-        foreach ($categories->filter(fn (Category $category) => $category->parents->isEmpty()) as $root) {
-            if (collect($items)->contains(fn ($item) => $item['category']->id === $root->id && $item['depth'] === 0)) continue;
-            $items[] = ['category' => $root, 'depth' => 0];
-            $walk($root->id, 1, [$root->id]);
-        }
-        foreach ($categories as $category) {
-            if (! collect($items)->contains(fn ($item) => $item['category']->id === $category->id)) {
-                $items[] = ['category' => $category, 'depth' => 0];
-                $walk($category->id, 1, [$category->id]);
-            }
-        }
+        foreach ($categories->whereNull('parent_id')->sortBy('name') as $root) $walk($root, 0, '');
         return $items;
     }
 
-    private function wouldCreateCategoryCycle(int $categoryId, array $parentIds): bool
+    private function isCategoryDescendant(int $candidateId, int $categoryId): bool
     {
         $frontier = [$categoryId];
         $visited = [];
         while ($frontier !== []) {
-            $current = array_pop($frontier);
-            if (isset($visited[$current])) continue;
-            $visited[$current] = true;
-            $frontier = array_merge($frontier, Category::find($current)?->children()->pluck('categories.id')->all() ?? []);
+            $frontier = array_values(array_diff($frontier, $visited));
+            if ($frontier === []) break;
+            $visited = array_merge($visited, $frontier);
+            $children = Category::whereIn('parent_id', $frontier)->pluck('id')->all();
+            if (in_array($candidateId, $children, true)) return true;
+            $frontier = $children;
         }
-        return collect($parentIds)->contains(fn ($id) => isset($visited[(int) $id]));
+        return false;
+    }
+
+    private function categoryDescendantIds(int $categoryId, $categories): array
+    {
+        $frontier = [$categoryId];
+        $descendants = [];
+        while ($frontier !== []) {
+            $children = $categories->whereIn('parent_id', $frontier)->pluck('id')->all();
+            $children = array_values(array_diff($children, $descendants, $frontier));
+            $descendants = array_merge($descendants, $children);
+            $frontier = $children;
+        }
+        return $descendants;
     }
 }

@@ -8,6 +8,7 @@ Route::get('/', [MagazineController::class, 'home'])->name('home');
 Route::get('/articles', [MagazineController::class, 'index'])->name('articles.index');
 Route::get('/articles/{article:slug}', [MagazineController::class, 'show'])->name('articles.show');
 Route::get('/category/{category:slug}', [MagazineController::class, 'category'])->name('categories.show');
+Route::get('/category/{path}', [MagazineController::class, 'categoryPath'])->where('path', '.*')->name('categories.path');
 Route::post('/newsletter', [MagazineController::class, 'subscribe'])->name('newsletter.subscribe');
 Route::get('/dashboard', fn () => view('magazine.dashboard'))->middleware('auth:web')->name('dashboard');
 

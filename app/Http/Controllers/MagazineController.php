@@ -47,12 +47,44 @@ class MagazineController extends Controller
             $term = $request->string('q')->toString();
             $articles->where(fn ($query) => $query->where('title', 'like', "%{$term}%")->orWhere('excerpt', 'like', "%{$term}%"));
         }
-        return view('magazine.index', ['articles' => $articles->paginate(9)->withQueryString(), 'categories' => Category::orderBy('name')->get()]);
+        return view('magazine.index', ['articles' => $articles->paginate(9)->withQueryString(), 'categories' => $this->categoryNavigation()]);
     }
 
     public function category(Category $category): View
     {
-        return view('magazine.index', ['category' => $category, 'articles' => $category->articles()->with(['category', 'images'])->whereNotNull('published_at')->latest('published_at')->paginate(9), 'categories' => Category::orderBy('name')->get()]);
+        $category->loadMissing(['parent.children', 'children']);
+        $activeParentCategory = $category->parent ?? $category;
+        $categoryIds = collect([$category->id]);
+
+        if ($category->parent_id === null) {
+            $categoryIds = $categoryIds->merge($category->children->modelKeys());
+        }
+
+        $articles = Article::with(['category', 'images'])
+            ->whereNotNull('published_at')
+            ->where(function ($query) use ($categoryIds) {
+                $query->whereIn('category_id', $categoryIds)
+                    ->orWhereHas('categories', fn ($categories) => $categories->whereIn('categories.id', $categoryIds));
+            })
+            ->latest('published_at')
+            ->paginate(9)
+            ->withQueryString();
+
+        return view('magazine.index', [
+            'category' => $category,
+            'activeParentCategory' => $activeParentCategory,
+            'articles' => $articles,
+            'categories' => $this->categoryNavigation(),
+        ]);
+    }
+
+    public function categoryPath(string $path): View
+    {
+        $segments = array_values(array_filter(explode('/', trim($path, '/'))));
+        $category = Category::where('slug', end($segments) ?: '')->firstOrFail();
+        abort_unless($category->slug_path === implode('/', $segments), 404);
+
+        return $this->category($category);
     }
 
     public function show(Article $article): View
@@ -83,5 +115,10 @@ class MagazineController extends Controller
             'created_at' => now(), 'updated_at' => now(),
         ]);
         return back()->with('newsletter_success', 'You are on the list. See you in your inbox.');
+    }
+
+    private function categoryNavigation()
+    {
+        return Category::with('children')->whereNull('parent_id')->orderBy('name')->get();
     }
 }

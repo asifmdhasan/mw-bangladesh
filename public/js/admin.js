@@ -54,7 +54,7 @@ $(function () {
             const $name = $('#newCategoryName');
             const $description = $('#newCategoryDescription');
             const $slug = $('#newCategorySlug');
-            const parentIds = $('#newCategoryParents').val() || [];
+            const parentId = $('#newCategoryParents').val() || '';
             const $error = $('#categoryError').empty();
             const $success = $('#categorySuccess').empty();
             const name = $.trim($name.val());
@@ -69,17 +69,17 @@ $(function () {
             $.ajax({
                 url: $categoryModal.data('category-create-url'),
                 method: 'POST',
-                data: { name, slug: $.trim($slug.val()), description: $.trim($description.val()), parent_ids: parentIds },
+                data: { name, slug: $.trim($slug.val()), description: $.trim($description.val()), parent_id: parentId },
                 headers: {
                     Accept: 'application/json',
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
                 },
             }).done((result) => {
-                const $choice = $('<label>', { class: 'category-tree-item', 'data-category-name': result.name.toLowerCase() }).css('--tree-depth', 0);
+                const $choice = $('<label>', { class: 'category-tree-item', 'data-category-name': result.path.toLowerCase() }).css('--tree-depth', result.depth);
                 $('<input>', { class: 'form-check-input category-choice', type: 'checkbox', 'data-category-id': result.id, checked: true }).appendTo($choice);
-                $('<span>').text(result.name).appendTo($choice);
+                $('<span>').text(result.path).appendTo($choice);
                 $('#categoryTreeList').append($choice);
-                $('#newCategoryParents').append(new Option(result.name, result.id));
+                $('#newCategoryParents').append(new Option(result.path, result.id));
                 $success.text('Category added and selected.');
                 $name.val('');
                 $description.val('');
@@ -93,7 +93,7 @@ $(function () {
         $categoryModal.on('hidden.bs.modal', function () {
             $('#categoryError, #categorySuccess').empty();
             $('#newCategoryName, #newCategorySlug, #newCategoryDescription').val('');
-            $('#newCategoryParents').val([]);
+            $('#newCategoryParents').val('');
         });
     }
 
