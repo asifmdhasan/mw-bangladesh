@@ -18,6 +18,19 @@
         </div>
     </div>
     <div class="admin-panel p-4 mb-4">
+        <div class="settings-section-title"><i class="bi bi-image"></i><div><h2>Additional logos</h2><p>Set separate artwork for the website footer and admin panel.</p></div></div>
+        <div class="row g-4">
+            <div class="col-md-6"><label class="form-label" for="footer_logo">Footer logo</label><input class="form-control" id="footer_logo" name="footer_logo" type="file" accept=".jpg,.jpeg,.png,.svg,.webp,image/jpeg,image/png,image/svg+xml,image/webp"><div class="form-text">JPG, PNG, SVG or WEBP. Maximum 5 MB.</div>@if(!empty($settings['footer_logo']))<img class="mt-2" src="{{ asset($settings['footer_logo']) }}" alt="Current footer logo" style="max-width:220px;max-height:90px;object-fit:contain">@else<span class="form-text d-block mt-2">Currently using the site logo.</span>@endif</div>
+            <div class="col-md-6"><label class="form-label" for="admin_logo">Admin logo</label><input class="form-control" id="admin_logo" name="admin_logo" type="file" accept=".jpg,.jpeg,.png,.svg,.webp,image/jpeg,image/png,image/svg+xml,image/webp"><div class="form-text">JPG, PNG, SVG or WEBP. Maximum 5 MB.</div>@if(!empty($settings['admin_logo']))<img class="mt-2" src="{{ asset($settings['admin_logo']) }}" alt="Current admin logo" style="max-width:220px;max-height:90px;object-fit:contain">@else<span class="form-text d-block mt-2">Currently using the site logo.</span>@endif</div>
+        </div>
+    </div>
+    <div class="admin-panel p-4 mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-6"><label class="form-label" for="favicon">Favicon</label><input class="form-control" id="favicon" name="favicon" type="file" accept=".ico,.png,.svg,.webp,image/x-icon,image/vnd.microsoft.icon,image/png,image/svg+xml,image/webp"><div class="form-text">ICO, PNG, SVG or WEBP. Maximum 2 MB. Used as the browser tab icon.</div></div>
+            <div class="col-md-6">@if(!empty($settings['favicon']))<img src="{{ asset($settings['favicon']) }}" alt="Current favicon" style="width:48px;height:48px;object-fit:contain"><span class="form-text d-block">Current favicon</span>@else<span class="text-muted">No favicon uploaded.</span>@endif</div>
+        </div>
+    </div>
+    <div class="admin-panel p-4 mb-4">
         <div class="settings-section-title"><i class="bi bi-graph-up-arrow"></i><div><h2>Analytics & advertising</h2><p>Enter IDs from your Google accounts. Tracking loads on public magazine pages.</p></div></div>
         <div class="row g-3">
             <div class="col-md-6"><label class="form-label" for="ga_measurement_id">Google Analytics 4 Measurement ID</label><input id="ga_measurement_id" class="form-control" name="ga_measurement_id" value="{{ old('ga_measurement_id',$settings['ga_measurement_id'] ?? '') }}" placeholder="G-XXXXXXXXXX"><div class="form-text">Find it in Google Analytics → Admin → Data streams.</div></div>

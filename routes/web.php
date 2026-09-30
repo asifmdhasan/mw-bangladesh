@@ -5,10 +5,9 @@ use App\Http\Controllers\MagazineController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MagazineController::class, 'home'])->name('home');
+Route::get('/search', [MagazineController::class, 'searchSuggestions'])->name('search.suggestions');
 Route::get('/articles', [MagazineController::class, 'index'])->name('articles.index');
 Route::get('/articles/{article:slug}', [MagazineController::class, 'show'])->name('articles.show');
-Route::get('/category/{category:slug}', [MagazineController::class, 'category'])->name('categories.show');
-Route::get('/category/{path}', [MagazineController::class, 'categoryPath'])->where('path', '.*')->name('categories.path');
 Route::post('/newsletter', [MagazineController::class, 'subscribe'])->name('newsletter.subscribe');
 Route::get('/dashboard', fn () => view('magazine.dashboard'))->middleware('auth:web')->name('dashboard');
 
@@ -39,3 +38,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/{path}', [MagazineController::class, 'categoryPath'])->where('path', '.*')->name('categories.path');

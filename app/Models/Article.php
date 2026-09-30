@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class Article extends Model
 {
-    protected $fillable = ['category_id', 'author_id', 'title', 'slug', 'excerpt', 'body', 'image_url', 'featured_image', 'is_featured', 'is_spotlight', 'published_at'];
+    protected $fillable = ['category_id', 'author_id', 'title', 'slug', 'excerpt', 'body', 'image_url', 'featured_image', 'mobile_featured_image', 'is_featured', 'is_spotlight', 'published_at'];
 
     protected function casts(): array
     {
@@ -32,5 +32,14 @@ class Article extends Model
         }
 
         return Str::startsWith($path, ['https://', 'http://']) ? $path : asset($path);
+    }
+
+    public function getMobileImageSrcAttribute(): string
+    {
+        $path = $this->mobile_featured_image;
+
+        return $path
+            ? (Str::startsWith($path, ['https://', 'http://']) ? $path : asset($path))
+            : $this->image_src;
     }
 }

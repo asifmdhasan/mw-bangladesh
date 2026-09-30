@@ -59,7 +59,7 @@ class Category extends Model
 
     public function getUrlAttribute(): string
     {
-        return url('/category/'.$this->slug_path);
+        return url('/'.$this->slug_path);
     }
 
     public static function uniqueSlug(string $name, ?int $ignoreId = null): string

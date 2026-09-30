@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}"><title>@yield('title', 'Admin') · Man’s World Bangladesh</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if(!empty($siteSettings['favicon']))<link rel="icon" href="{{ asset($siteSettings['favicon']) }}">@endif
+    <title>@yield('title', 'Admin') · Man’s World Bangladesh</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,7 +15,7 @@
 </head>
 <body class="admin-shell">
     <aside class="admin-sidebar" id="adminSidebar">
-        <a class="admin-brand" href="{{ route('admin.dashboard') }}">@if(!empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">@else<span>MW</span><small>MAN'S WORLD <b>·</b> ADMIN</small>@endif</a>
+        <a class="admin-brand" href="{{ route('admin.dashboard') }}">@if(!empty($siteSettings['admin_logo']) || !empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['admin_logo'] ?? $siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">@else<span>MW</span><small>MAN'S WORLD <b>·</b> ADMIN</small>@endif</a>
         <div class="admin-side-label">WORKSPACE</div>
         <nav class="admin-menu">
             <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2"></i> Dashboard</a>

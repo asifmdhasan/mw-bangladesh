@@ -52,7 +52,20 @@ class AdminController extends Controller
         return view('admin.dashboard', ['articles' => $stories->paginate(15)->withQueryString(), 'categories' => $this->categoryTreeItems(), 'articleCount' => Article::count(), 'publishedCount' => Article::whereNotNull('published_at')->count(), 'subscriberCount' => DB::table('newsletter_subscribers')->count(), 'categoryCount' => Category::count(), 'userCount' => User::count()]);
     }
 
-    public function create(): View { return view('admin.create', ['categories' => Category::all(), 'categoryTreeItems' => $this->categoryTreeItems(), 'allCategories' => $this->categoryTreeItems()]); }
+    public function create(Request $request): View
+    {
+        $copySource = $request->filled('copy')
+            ? Article::with(['images', 'categories', 'tags'])->findOrFail($request->integer('copy'))
+            : null;
+
+        return view('admin.create', [
+            'copySource' => $copySource,
+            'suggestedSlug' => $copySource ? $this->uniqueArticleSlug($copySource->title) : '',
+            'categories' => Category::all(),
+            'categoryTreeItems' => $this->categoryTreeItems(),
+            'allCategories' => $this->categoryTreeItems(),
+        ]);
+    }
 
     public function edit(Article $article): View { return view('admin.create', ['article' => $article->load(['images', 'categories', 'tags']), 'categories' => Category::all(), 'categoryTreeItems' => $this->categoryTreeItems(), 'allCategories' => $this->categoryTreeItems()]); }
 
@@ -60,19 +73,35 @@ class AdminController extends Controller
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:180'], 'category_ids' => ['required', 'array', 'min:1'], 'category_ids.*' => ['integer', 'distinct', 'exists:categories,id'],
+            'slug' => ['nullable', 'string', 'max:180', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'], 'copy_source_id' => ['nullable', 'integer', 'exists:articles,id'],
             'excerpt' => ['required', 'string', 'max:320'], 'body' => ['required', 'string'],
-            'image_url' => ['nullable', 'url', 'max:500'], 'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240'], 'tag_names' => ['nullable', 'string', 'max:2000'], 'is_featured' => ['nullable', 'boolean'], 'publish' => ['nullable', 'boolean'],
+            'image_url' => ['nullable', 'url', 'max:500'], 'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'mobile_featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'tag_names' => ['nullable', 'string', 'max:2000'], 'is_featured' => ['nullable', 'boolean'], 'publish' => ['nullable', 'boolean'],
             'is_spotlight' => ['nullable', 'boolean'], 'images' => ['nullable', 'array', 'max:12'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240'],
+        ], [
+            'featured_image.max' => 'The main featured image must not exceed 1.5 MB.',
+            'mobile_featured_image.max' => 'The mobile featured image must not exceed 1.5 MB.',
         ]);
         $uploadedImages = $request->file('images', []);
         $categoryIds = $data['category_ids'];
         $tagNames = $data['tag_names'] ?? '';
-        unset($data['category_ids'], $data['tag_names']);
+        $copySource = ! empty($data['copy_source_id']) ? Article::with('images')->findOrFail($data['copy_source_id']) : null;
+        unset($data['category_ids'], $data['tag_names'], $data['copy_source_id']);
         $data['category_id'] = $categoryIds[0];
         $data['body'] = $this->sanitizeEditorHtml($data['body']);
-        if ($request->hasFile('featured_image')) $data['featured_image'] = $this->saveArticleImage($request->file('featured_image'));
-        $data['slug'] = Str::slug($data['title']).'-'.Str::lower(Str::random(5));
+        if ($request->hasFile('featured_image')) {
+            $data['featured_image'] = $this->saveArticleImage($request->file('featured_image'));
+        } elseif ($copySource) {
+            $data['featured_image'] = ($data['image_url'] ?? null) !== $copySource->image_url
+                ? null
+                : $copySource->featured_image;
+        }
+        if ($request->hasFile('mobile_featured_image')) {
+            $data['mobile_featured_image'] = $this->saveArticleImage($request->file('mobile_featured_image'));
+        } elseif ($copySource) {
+            $data['mobile_featured_image'] = $copySource->mobile_featured_image;
+        }
+        $data['slug'] = $this->uniqueArticleSlug(($data['slug'] ?? '') ?: $data['title']);
         $data['author_id'] = Auth::guard('admin')->id();
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_spotlight'] = $request->boolean('is_spotlight');
@@ -82,6 +111,11 @@ class AdminController extends Controller
         $article = Article::create($data);
         $article->categories()->sync($categoryIds);
         $this->syncTags($article, $tagNames);
+        if ($copySource) {
+            foreach ($copySource->images as $image) {
+                $article->images()->create(['path' => $image->path, 'alt_text' => $image->alt_text, 'sort_order' => $image->sort_order]);
+            }
+        }
         if ($uploadedImages !== []) {
             $directory = public_path('uploads/articles');
             File::ensureDirectoryExists($directory);
@@ -90,7 +124,7 @@ class AdminController extends Controller
                 $fileName = Str::uuid().'.'.$image->guessExtension();
                 $image->move($directory, $fileName);
                 $path = 'uploads/articles/'.$fileName;
-                $article->images()->create(['path' => $path, 'alt_text' => $article->title, 'sort_order' => $position]);
+                $article->images()->create(['path' => $path, 'alt_text' => $article->title, 'sort_order' => $article->images()->count()]);
 
                 if ($position === 0 && ! $article->image_url) {
                     $article->update(['image_url' => $path]);
@@ -102,14 +136,22 @@ class AdminController extends Controller
 
     public function update(Request $request, Article $article): RedirectResponse
     {
-        $data = $request->validate(['title' => ['required', 'string', 'max:180'], 'category_ids' => ['required', 'array', 'min:1'], 'category_ids.*' => ['integer', 'distinct', 'exists:categories,id'], 'excerpt' => ['required', 'string', 'max:320'], 'body' => ['required', 'string'], 'image_url' => ['nullable', 'url', 'max:500'], 'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240'], 'tag_names' => ['nullable', 'string', 'max:2000'], 'is_featured' => ['nullable', 'boolean'], 'publish' => ['nullable', 'boolean'], 'is_spotlight' => ['nullable', 'boolean'], 'images' => ['nullable', 'array', 'max:12'], 'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240']]);
+        $data = $request->validate(['title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'string', 'max:180', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'], 'category_ids' => ['required', 'array', 'min:1'], 'category_ids.*' => ['integer', 'distinct', 'exists:categories,id'], 'excerpt' => ['required', 'string', 'max:320'], 'body' => ['required', 'string'], 'image_url' => ['nullable', 'url', 'max:500'], 'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'mobile_featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'tag_names' => ['nullable', 'string', 'max:2000'], 'is_featured' => ['nullable', 'boolean'], 'publish' => ['nullable', 'boolean'], 'is_spotlight' => ['nullable', 'boolean'], 'images' => ['nullable', 'array', 'max:12'], 'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240']], [
+            'featured_image.max' => 'The main featured image must not exceed 1.5 MB.',
+            'mobile_featured_image.max' => 'The mobile featured image must not exceed 1.5 MB.',
+        ]);
         $categoryIds = $data['category_ids'];
         $tagNames = $data['tag_names'] ?? '';
         unset($data['category_ids'], $data['tag_names']);
         $data['category_id'] = $categoryIds[0];
         $data['body'] = $this->sanitizeEditorHtml($data['body']);
         if ($request->hasFile('featured_image')) $data['featured_image'] = $this->saveArticleImage($request->file('featured_image'));
-        $data['slug'] = Str::slug($data['title']).'-'.Str::lower(Str::random(5));
+        if ($request->hasFile('mobile_featured_image')) {
+            $data['mobile_featured_image'] = $this->saveArticleImage($request->file('mobile_featured_image'));
+        } else {
+            unset($data['mobile_featured_image']);
+        }
+        $data['slug'] = $this->uniqueArticleSlug(($data['slug'] ?? '') ?: $data['title'], $article->id);
         $data['is_featured'] = $request->boolean('is_featured'); $data['is_spotlight'] = $request->boolean('is_spotlight');
         $data['published_at'] = $request->boolean('publish') ? ($article->published_at ?? now()) : null;
         unset($data['images']); $article->update($data);
@@ -284,19 +326,19 @@ class AdminController extends Controller
 
     public function updateSettings(Request $request): RedirectResponse
     {
-        $data = $request->validate(['site_title' => ['required', 'string', 'max:120'], 'tagline' => ['nullable', 'string', 'max:240'], 'ga_measurement_id' => ['nullable', 'regex:/^G-[A-Z0-9]+$/i'], 'adsense_publisher_id' => ['nullable', 'regex:/^ca-pub-[0-9]+$/'], 'facebook_url' => ['nullable', 'url', 'max:500'], 'instagram_url' => ['nullable', 'url', 'max:500'], 'youtube_url' => ['nullable', 'url', 'max:500'], 'site_logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,svg,webp', 'max:5120']]);
-        $logoPath = null;
-        if ($request->hasFile('site_logo')) {
-            $oldLogo = DB::table('site_settings')->where('key', 'site_logo')->value('value');
-            $image = $request->file('site_logo');
+        $data = $request->validate(['site_title' => ['required', 'string', 'max:120'], 'tagline' => ['nullable', 'string', 'max:240'], 'ga_measurement_id' => ['nullable', 'regex:/^G-[A-Z0-9]+$/i'], 'adsense_publisher_id' => ['nullable', 'regex:/^ca-pub-[0-9]+$/'], 'facebook_url' => ['nullable', 'url', 'max:500'], 'instagram_url' => ['nullable', 'url', 'max:500'], 'youtube_url' => ['nullable', 'url', 'max:500'], 'site_logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,svg,webp', 'max:5120'], 'favicon' => ['nullable', 'file', 'mimes:ico,png,svg,webp', 'max:2048'], 'footer_logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,svg,webp', 'max:5120'], 'admin_logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,svg,webp', 'max:5120']]);
+        foreach (['site_logo', 'favicon', 'footer_logo', 'admin_logo'] as $uploadKey) {
+            if (! $request->hasFile($uploadKey)) continue;
+            $oldAsset = DB::table('site_settings')->where('key', $uploadKey)->value('value');
+            $image = $request->file($uploadKey);
             $fileName = Str::uuid().'.'.$image->guessExtension();
             File::ensureDirectoryExists(public_path('uploads/site'));
             $image->move(public_path('uploads/site'), $fileName);
-            $logoPath = 'uploads/site/'.$fileName;
-            DB::table('site_settings')->updateOrInsert(['key' => 'site_logo'], ['value' => $logoPath, 'updated_at' => now(), 'created_at' => now()]);
-            if ($oldLogo && str_starts_with($oldLogo, 'uploads/site/') && File::exists(public_path($oldLogo))) File::delete(public_path($oldLogo));
+            $assetPath = 'uploads/site/'.$fileName;
+            DB::table('site_settings')->updateOrInsert(['key' => $uploadKey], ['value' => $assetPath, 'updated_at' => now(), 'created_at' => now()]);
+            if ($oldAsset && str_starts_with($oldAsset, 'uploads/site/') && File::exists(public_path($oldAsset))) File::delete(public_path($oldAsset));
         }
-        unset($data['site_logo']);
+        unset($data['site_logo'], $data['favicon'], $data['footer_logo'], $data['admin_logo']);
         foreach ($data as $key => $value) DB::table('site_settings')->updateOrInsert(['key' => $key], ['value' => $value, 'updated_at' => now(), 'created_at' => now()]);
         return back()->with('status', 'Site settings saved.');
     }
@@ -321,6 +363,19 @@ class AdminController extends Controller
     private function makeCategorySlug(string $name, ?int $ignoreId = null): string
     {
         return Category::uniqueSlug($name, $ignoreId);
+    }
+
+    private function uniqueArticleSlug(string $value, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($value) ?: 'story';
+        $slug = $base;
+        $suffix = 2;
+
+        while (Article::where('slug', $slug)->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))->exists()) {
+            $slug = $base.'-'.$suffix++;
+        }
+
+        return $slug;
     }
 
     private function categoryTreeItems($categories = null): array
