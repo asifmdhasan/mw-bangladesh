@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
         foreach ($editorialSections as [$name, $slug, $titles]) {
             foreach ($titles as $title) {
                 $excerpt = 'A fresh perspective on '.strtolower($name).' from the people, places and ideas shaping life in Bangladesh.';
-                $body = $excerpt."\n\nOur editors went looking for the small details behind the bigger story. What they found is a portrait of people making considered choices, sharing ideas and building something with care.\n\nThis is an original Man’s World Bangladesh feature, created for readers who like to look a little closer.";
+                $body = $excerpt."\n\nOur editors went looking for the small details behind the bigger story. What they found is a portrait of people making considered choices, sharing ideas and building something with care.\n\nThis is an original MW Bangladesh feature, created for readers who like to look a little closer.";
                 $stories[] = [$name, $slug, $title, $excerpt, $body];
             }
         }

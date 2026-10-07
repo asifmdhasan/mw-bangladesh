@@ -78,7 +78,7 @@ class DemoSectionsSeeder extends Seeder
                     'author_id' => $authorId,
                     'title' => $title,
                     'excerpt' => $excerpt,
-                    'body' => $excerpt."\n\nOur editors went looking for the small details behind the bigger story. What they found is a portrait of people making considered choices, sharing ideas and building something with care.\n\nThis is an original Man’s World Bangladesh feature, created for readers who like to look a little closer.",
+                    'body' => $excerpt."\n\nOur editors went looking for the small details behind the bigger story. What they found is a portrait of people making considered choices, sharing ideas and building something with care.\n\nThis is an original MW Bangladesh feature, created for readers who like to look a little closer.",
                     'image_url' => 'https://images.unsplash.com/photo-'.$photos[($index + array_search($slug, array_keys($sections), true) * 7) % count($photos)].'?auto=format&fit=crop&w=1400&q=85',
                     'is_featured' => false,
                     'is_spotlight' => $slug === 'style',

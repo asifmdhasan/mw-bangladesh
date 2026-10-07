@@ -1,5 +1,5 @@
 @extends('layouts.magazine')
-@section('title', "Man's World Bangladesh — Style, Culture & Ideas")
+@section('title', "MW Bangladesh — Style, Culture & Ideas")
 @section('content')
 <main>
     <section class="spotlight-section" id="spotlight" aria-label="Spotlight stories">

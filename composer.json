@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "mans-world-bd/magazine",
     "type": "project",
-    "description": "Man's World Bangladesh digital lifestyle magazine.",
+    "description": "MW Bangladesh digital lifestyle magazine.",
     "keywords": ["laravel", "magazine", "lifestyle"],
     "license": "MIT",
     "require": {

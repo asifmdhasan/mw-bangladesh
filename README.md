@@ -1,4 +1,4 @@
-# Man's World Bangladesh
+# MW Bangladesh
 
 An original Laravel 11 lifestyle and digital magazine demo, built with Blade and Bootstrap 5. Articles, excerpts and editorial copy are original sample content.
 

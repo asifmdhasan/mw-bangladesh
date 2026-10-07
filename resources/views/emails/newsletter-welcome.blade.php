@@ -6,7 +6,7 @@
         <h1 style="margin:0 0 18px;font-size:24px">Thanks for subscribing!</h1>
         @if($name)<p>Hi {{ $name }},</p>@endif
         <p>You are on the list. See you in your inbox.</p>
-        <p style="margin-bottom:0">Man's World Bangladesh</p>
+        <p style="margin-bottom:0">MW Bangladesh</p>
     </div>
 </body>
 </html>

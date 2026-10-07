@@ -7,7 +7,7 @@
     <div class="admin-panel p-4 mb-4">
         <div class="settings-section-title"><i class="bi bi-globe2"></i><div><h2>Site identity</h2><p>How the magazine is presented to readers.</p></div></div>
         <div class="row g-3">
-            <div class="col-md-6"><label class="form-label" for="site_title">Site title</label><input id="site_title" class="form-control" name="site_title" value="{{ old('site_title',$settings['site_title'] ?? "Man's World Bangladesh") }}" required maxlength="120"></div>
+            <div class="col-md-6"><label class="form-label" for="site_title">Site title</label><input id="site_title" class="form-control" name="site_title" value="{{ old('site_title',$settings['site_title'] ?? "MW Bangladesh") }}" required maxlength="120"></div>
             <div class="col-md-6"><label class="form-label" for="tagline">Tagline</label><input id="tagline" class="form-control" name="tagline" value="{{ old('tagline',$settings['tagline'] ?? 'Stories with perspective.') }}" maxlength="240"></div>
         </div>
     </div>

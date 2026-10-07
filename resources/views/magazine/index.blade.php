@@ -1,5 +1,5 @@
 @extends('layouts.magazine')
-@section('title', isset($category) ? $category->display_name.' — Man\'s World Bangladesh' : 'Stories — Man\'s World Bangladesh')
+@section('title', isset($category) ? $category->display_name.' — MW Bangladesh' : 'Stories — MW Bangladesh')
 @section('content')
 <main class="container listing-page {{ isset($category) ? 'pt-0' : '' }}"><div class="listing-title-row"><div><h1>{{ isset($category) ? $category->display_name : 'Stories worth your time' }}</h1><p>{{ isset($category) ? $category->description : 'Fresh perspective across the things that make a life.' }}</p></div></div>
 @unless(isset($category))

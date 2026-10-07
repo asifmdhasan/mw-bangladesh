@@ -1,3 +1,3 @@
 @extends('layouts.magazine')
-@section('title', 'My account — Man\'s World Bangladesh')
+@section('title', 'My account — MW Bangladesh')
 @section('content')<main class="container listing-page"><div class="eyebrow">YOUR MW ACCOUNT</div><div class="listing-title-row"><div><h1>Welcome, {{ auth()->user()->name }}.</h1><p>Your account is ready. Here's what's happening in the journal.</p></div><form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-outline-dark">Sign out</button></form></div><section class="account-note"><span class="eyebrow">A NOTE FROM THE EDITORS</span><p>New stories arrive regularly. Subscribe to the MW Letter below to get our weekly edit in your inbox.</p><a href="{{ route('articles.index') }}" class="text-link">Explore the latest stories →</a></section></main>@endsection

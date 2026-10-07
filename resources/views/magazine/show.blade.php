@@ -1,5 +1,5 @@
 @extends('layouts.magazine')
-@section('title', $article->title.' — Man\'s World Bangladesh')
+@section('title', $article->title.' — MW Bangladesh')
 @section('meta')
 <meta name="description" content="{{ $article->excerpt }}">
 <meta property="og:type" content="article">

@@ -4,7 +4,7 @@
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @if(!empty($siteSettings['favicon']))<link rel="icon" href="{{ asset($siteSettings['favicon']) }}">@endif
-    <title>@yield('title', 'Admin') · Man’s World Bangladesh</title>
+    <title>@yield('title', 'Admin') · MW Bangladesh</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,7 +15,7 @@
 </head>
 <body class="admin-shell">
     <aside class="admin-sidebar" id="adminSidebar">
-        <a class="admin-brand" href="{{ route('admin.dashboard') }}">@if(!empty($siteSettings['admin_logo']) || !empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['admin_logo'] ?? $siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">@else<span>MW</span><small>MAN'S WORLD <b>·</b> ADMIN</small>@endif</a>
+        <a class="admin-brand" href="{{ route('admin.dashboard') }}">@if(!empty($siteSettings['admin_logo']) || !empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['admin_logo'] ?? $siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "MW Bangladesh" }}">@else<span>MW</span><small>MW Bangladesh <b>·</b> ADMIN</small>@endif</a>
         <div class="admin-side-label">WORKSPACE</div>
         <nav class="admin-menu">
             <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
@@ -29,7 +29,7 @@
         <div class="admin-sidebar-bottom"><div class="admin-avatar">{{ strtoupper(substr(auth('admin')->user()->name, 0, 1)) }}</div><div class="admin-user-meta"><strong>{{ auth('admin')->user()->name }}</strong><small>Administrator</small></div><form method="POST" action="{{ route('admin.logout') }}">@csrf<button class="admin-logout" title="Sign out"><i class="bi bi-box-arrow-right"></i></button></form></div>
     </aside>
     <div class="admin-main">
-        <header class="admin-topbar"><button class="admin-menu-toggle" type="button" data-admin-sidebar-toggle aria-label="Toggle admin menu"><i class="bi bi-list"></i></button><div class="admin-breadcrumb">Man's World <span>/</span> @yield('page','Dashboard')</div><a href="{{ route('admin.articles.create') }}" class="btn btn-danger btn-sm"><i class="bi bi-plus-lg me-1"></i> New story</a></header>
+        <header class="admin-topbar"><button class="admin-menu-toggle" type="button" data-admin-sidebar-toggle aria-label="Toggle admin menu"><i class="bi bi-list"></i></button><div class="admin-breadcrumb">MW Bangladesh <span>/</span> @yield('page','Dashboard')</div><a href="{{ route('admin.articles.create') }}" class="btn btn-danger btn-sm"><i class="bi bi-plus-lg me-1"></i> New story</a></header>
         <main class="admin-content">
             @if(session('status'))<div class="alert alert-success alert-dismissible fade show" role="alert">{{ session('status') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
             @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif

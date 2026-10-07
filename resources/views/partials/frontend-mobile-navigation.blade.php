@@ -1,7 +1,7 @@
 <aside class="mobile-navigation-drawer" id="mobileNavigationDrawer" aria-label="Mobile navigation" aria-hidden="true" inert>
     <div class="mobile-drawer-header">
-        <a class="mw-logo mobile-drawer-logo" href="{{ route('home') }}" aria-label="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }} home">
-            @if(!empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">@else<span>MW</span><small>BANGLADESH</small>@endif
+        <a class="mw-logo mobile-drawer-logo" href="{{ route('home') }}" aria-label="{{ $siteSettings['site_title'] ?? "MW Bangladesh" }} home">
+            @if(!empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "MW Bangladesh" }}">@else<span>MW</span><small>BANGLADESH</small>@endif
         </a>
         <button class="mobile-drawer-close" type="button" aria-label="Close navigation menu"><span aria-hidden="true">&times;</span></button>
     </div>

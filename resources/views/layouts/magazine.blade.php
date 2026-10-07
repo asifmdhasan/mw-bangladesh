@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="{{ $siteSettings['tagline'] ?? 'Man\'s World Bangladesh — stories on style, culture, entertainment and ideas.' }}">
+    <meta name="description" content="{{ $siteSettings['tagline'] ?? 'MW Bangladesh — stories on style, culture, entertainment and ideas.' }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @if(!empty($siteSettings['favicon']))<link rel="icon" href="{{ asset($siteSettings['favicon']) }}">@endif
-    <title>@yield('title', ($siteSettings['site_title'] ?? "Man's World Bangladesh").' — A life well considered')</title>
+    <title>@yield('title', ($siteSettings['site_title'] ?? "MW Bangladesh").' — A life well considered')</title>
     @yield('meta')
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
     @include('partials.frontend-mobile-navigation')
     <div class="mobile-site-shell" id="mobileSiteShell">
     <header class="site-header">
-        <div class="container brand-row"><a class="mw-logo" href="{{ route('home') }}" aria-label="Man's World Bangladesh">@if(!empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">@else<span>MW</span><small>BANGLADESH</small>@endif</a><div class="header-actions">
+        <div class="container brand-row"><a class="mw-logo" href="{{ route('home') }}" aria-label="MW Bangladesh">@if(!empty($siteSettings['site_logo']))<img src="{{ asset($siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "MW Bangladesh" }}">@else<span>MW</span><small>BANGLADESH</small>@endif</a><div class="header-actions">
             <form class="nav-search d-none d-md-flex" action="{{ route('articles.index') }}" data-search-url="{{ route('search.suggestions') }}" role="search">
                 <input name="q" type="search" aria-label="Search" aria-autocomplete="list" aria-controls="nav-search-results" aria-expanded="false" autocomplete="off" placeholder="Search">
                 <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
@@ -63,7 +63,7 @@
             <div class="footer-brand">
                 <a class="mw-logo mw-logo-footer" href="{{ route('home') }}">
                     @if(!empty($siteSettings['footer_logo'] ?? $siteSettings['site_logo'] ?? null))
-                        <img src="{{ asset($siteSettings['footer_logo'] ?? $siteSettings['site_logo'] ?? null) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">
+                        <img src="{{ asset($siteSettings['footer_logo'] ?? $siteSettings['site_logo'] ?? null) }}" alt="{{ $siteSettings['site_title'] ?? "MW Bangladesh" }}">
                     @else
                         <span>MW</span><small>BANGLADESH</small>
                     @endif
@@ -82,7 +82,7 @@
                     </div>
                 </section>
                 <section class="footer-company">
-                    <h3>{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}</h3>
+                    <h3>{{ $siteSettings['site_title'] ?? "MW Bangladesh" }}</h3>
                     <div class="footer-company-columns">
                         <div class="footer-link-column">
                             <a href="{{ route('home') }}">About</a>
