@@ -17,6 +17,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
     Route::middleware('auth:admin')->group(function () {
         Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/articles', [AdminController::class, 'articles'])->name('articles.index');
         Route::get('/articles/create', [AdminController::class, 'create'])->name('articles.create');
         Route::get('/articles/{article}/edit', [AdminController::class, 'edit'])->name('articles.edit');
         Route::post('/articles', [AdminController::class, 'store'])->name('articles.store');

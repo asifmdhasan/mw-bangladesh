@@ -40,6 +40,21 @@ class AdminController extends Controller
 
     public function dashboard(): View
     {
+        $stories = $this->storyListingQuery();
+        return view('admin.dashboard', ['articles' => $stories->paginate(15)->withQueryString(), 'categories' => $this->categoryTreeItems(), 'articleCount' => Article::count(), 'publishedCount' => Article::whereNotNull('published_at')->count(), 'subscriberCount' => DB::table('newsletter_subscribers')->count(), 'categoryCount' => Category::count(), 'userCount' => User::count()]);
+    }
+
+    public function articles(): View
+    {
+        return view('admin.dashboard', [
+            'storiesPage' => true,
+            'articles' => $this->storyListingQuery()->paginate(15)->withQueryString(),
+            'categories' => $this->categoryTreeItems(),
+        ]);
+    }
+
+    private function storyListingQuery()
+    {
         $stories = Article::with('category')->latest();
         if (request()->filled('q')) {
             $term = request()->string('q')->toString();
@@ -47,9 +62,10 @@ class AdminController extends Controller
         }
         if (request('status') === 'published') $stories->whereNotNull('published_at');
         if (request('status') === 'draft') $stories->whereNull('published_at');
+        if (request('spotlight') === '1') $stories->where('is_spotlight', true);
+        if (request('spotlight') === '0') $stories->where('is_spotlight', false);
         if (request()->filled('category_id')) $stories->whereHas('categories', fn ($query) => $query->whereKey(request('category_id')));
-
-        return view('admin.dashboard', ['articles' => $stories->paginate(15)->withQueryString(), 'categories' => $this->categoryTreeItems(), 'articleCount' => Article::count(), 'publishedCount' => Article::whereNotNull('published_at')->count(), 'subscriberCount' => DB::table('newsletter_subscribers')->count(), 'categoryCount' => Category::count(), 'userCount' => User::count()]);
+        return $stories;
     }
 
     public function create(Request $request): View

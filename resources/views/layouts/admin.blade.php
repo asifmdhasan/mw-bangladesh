@@ -19,7 +19,7 @@
         <div class="admin-side-label">WORKSPACE</div>
         <nav class="admin-menu">
             <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
-            <a class="{{ request()->routeIs('admin.articles.*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}"><i class="bi bi-file-earmark-text"></i> Stories</a>
+            <a class="{{ request()->routeIs('admin.articles.*') ? 'active' : '' }}" href="{{ route('admin.articles.index') }}"><i class="bi bi-file-earmark-text"></i> Stories</a>
             <a class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}"><i class="bi bi-collection"></i> Categories</a>
             <a class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}"><i class="bi bi-people"></i> Users</a>
             <a class="{{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}" href="{{ route('admin.newsletter.index') }}"><i class="bi bi-envelope-paper"></i> Newsletter</a>
