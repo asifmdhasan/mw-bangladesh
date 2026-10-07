@@ -62,8 +62,8 @@
         <div class="container footer-main">
             <div class="footer-brand">
                 <a class="mw-logo mw-logo-footer" href="{{ route('home') }}">
-                    @if(!empty($siteSettings['footer_logo'] ?? $siteSettings['site_logo']))
-                        <img src="{{ asset($siteSettings['footer_logo'] ?? $siteSettings['site_logo']) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">
+                    @if(!empty($siteSettings['footer_logo'] ?? $siteSettings['site_logo'] ?? null))
+                        <img src="{{ asset($siteSettings['footer_logo'] ?? $siteSettings['site_logo'] ?? null) }}" alt="{{ $siteSettings['site_title'] ?? "Man's World Bangladesh" }}">
                     @else
                         <span>MW</span><small>BANGLADESH</small>
                     @endif
