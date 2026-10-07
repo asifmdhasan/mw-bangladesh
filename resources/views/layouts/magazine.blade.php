@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/custom.css') }}?v={{ filemtime(public_path('css/custom.css')) }}" rel="stylesheet">
+    <link href="{{ asset('css/custom-cursor.css') }}?v={{ filemtime(public_path('css/custom-cursor.css')) }}" rel="stylesheet">
     @if(!empty($siteSettings['ga_measurement_id']))
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ rawurlencode($siteSettings['ga_measurement_id']) }}"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config',@json($siteSettings['ga_measurement_id']));</script>
@@ -122,6 +123,12 @@
         <a href="{{ route('home') }}" aria-label="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></a>
         <button type="button" id="mobileBottomSearch" aria-label="Open search" aria-expanded="false" aria-controls="mobileSearchPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
     </nav>
+    <div class="cur cur-ripple" data-cursor="ripple" role="img" aria-label="Ripple cursor demo" aria-hidden="true">
+        <span class="cur-hint mono" aria-hidden="true">hover</span>
+        <span class="cur-word" aria-hidden="true"></span>
+        <i class="cursor" style="--i:0"></i>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/custom.js') }}"></script>
+    <script src="{{ asset('js/custom-cursor.js') }}?v={{ filemtime(public_path('js/custom-cursor.js')) }}"></script>
 </body></html>

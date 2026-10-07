@@ -1,0 +1,172 @@
+:root {
+    --ink: #E72429;
+    --ink-2: #E72429;
+    --ink-3: #E72429;
+}
+
+@property --x {
+    syntax: '<length-percentage>';
+    inherits: true;
+    initial-value: 50%;
+}
+
+@property --y {
+    syntax: '<length-percentage>';
+    inherits: true;
+    initial-value: 50%;
+}
+
+@property --angle {
+    syntax: '<angle>';
+    inherits: true;
+    initial-value: 0deg;
+}
+
+@property --speed {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0;
+}
+
+.cur {
+    --c: #E72429;
+    --c2: #E72429;
+    position: fixed;
+    z-index: 2000;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    overflow: visible;
+    cursor: none;
+    touch-action: none;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .16s ease, visibility .16s ease;
+}
+
+body.custom-cursor-active,
+body.custom-cursor-active * {
+    cursor: none !important;
+}
+
+body.custom-cursor-active .cur {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cur-hint,
+.cur-word {
+    display: none;
+}
+
+.cur .cursor {
+    position: absolute;
+    z-index: 1;
+    left: var(--x);
+    top: var(--y);
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--c);
+    transform: translate(-50%, -50%);
+    transition:
+        left .06s linear,
+        top .06s linear,
+        width .18s ease,
+        height .18s ease;
+    pointer-events: none;
+    will-change: left, top;
+}
+
+.cur::after {
+    content: "";
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid #E72429;
+    background: transparent;
+    opacity: clamp(.35, var(--speed), .75);
+    transform: translate(-50%, -50%);
+    transition:
+        left .22s cubic-bezier(.22, 1, .36, 1),
+        top .22s cubic-bezier(.22, 1, .36, 1),
+        width .22s cubic-bezier(.22, 1, .36, 1),
+        height .22s cubic-bezier(.22, 1, .36, 1),
+        opacity .18s ease;
+    pointer-events: none;
+    will-change: left, top, width, height;
+}
+
+.cur.is-interactive::after {
+    width: 44px;
+    height: 44px;
+}
+
+.cur.cur-ripple .cursor {
+    width: 14px;
+    height: 14px;
+    background: #E72429;
+    transition-duration: .12s;
+}
+
+.cur.cur-ripple.is-ripple .cursor {
+    width: 14px;
+    height: 14px;
+}
+
+.cur.cur-ripple.is-ripple .cursor::before,
+.cur.cur-ripple.is-ripple .cursor::after {
+    content: "";
+    position: absolute;
+    inset: 50%;
+    border: 2px solid var(--c);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: cur-ripple 1.6s ease-out infinite;
+    pointer-events: none;
+}
+
+.cur.cur-ripple.is-ripple .cursor::after {
+    border-color: var(--c2);
+    animation-delay: .8s;
+}
+
+@keyframes cur-ripple {
+    0% {
+        width: 10px;
+        height: 10px;
+        opacity: .8;
+    }
+
+    100% {
+        width: 74px;
+        height: 74px;
+        opacity: 0;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body.custom-cursor-active .cur {
+        display: block;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.custom-cursor-active,
+    body.custom-cursor-active * {
+        cursor: auto !important;
+    }
+
+    .cur,
+    .cur * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
