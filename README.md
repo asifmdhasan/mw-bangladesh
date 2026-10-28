@@ -19,6 +19,10 @@ An original Laravel 11 lifestyle and digital magazine demo, built with Blade and
 
 The sample editor account is `editor@mansworldbd.test` / `password`. Change this password before exposing the app outside a local demo. Subscriber accounts are created at `/register` and sign in at `/login`; the editorial sign-in is at `/admin/login`.
 
+## Production uploads
+
+The story editor can submit a story with up to 12 gallery images (10 MB each) and featured images. For Nginx/PHP-FPM deployments, apply the settings in `deploy/nginx/mw-upload-limits.conf` to the site's Nginx server block and load `deploy/php/mw-upload-limits.ini` in the PHP-FPM configuration. Then reload Nginx and restart PHP-FPM. Both limits are needed: Nginx's request limit must allow the full multipart request, and PHP's `post_max_size` must be larger than that request. Without the Nginx setting, a large story can fail with `413 Request Entity Too Large` before Laravel handles the upload.
+
 ## Included
 
 - Editorial homepage, latest-story listing, category pages, story detail pages and search

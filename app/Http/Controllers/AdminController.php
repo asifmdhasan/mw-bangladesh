@@ -90,7 +90,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:180'], 'category_ids' => ['required', 'array', 'min:1'], 'category_ids.*' => ['integer', 'distinct', 'exists:categories,id'],
             'slug' => ['nullable', 'string', 'max:180', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'], 'copy_source_id' => ['nullable', 'integer', 'exists:articles,id'],
-            'excerpt' => ['required', 'string', 'max:320'], 'body' => ['required', 'string'],
+            'excerpt' => ['nullable', 'string', 'max:320'], 'body' => ['required', 'string'],
             'image_url' => ['nullable', 'url', 'max:500'], 'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'mobile_featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'tag_names' => ['nullable', 'string', 'max:2000'], 'is_featured' => ['nullable', 'boolean'], 'publish' => ['nullable', 'boolean'],
             'is_spotlight' => ['nullable', 'boolean'], 'images' => ['nullable', 'array', 'max:12'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240'],
@@ -152,7 +152,7 @@ class AdminController extends Controller
 
     public function update(Request $request, Article $article): RedirectResponse
     {
-        $data = $request->validate(['title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'string', 'max:180', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'], 'category_ids' => ['required', 'array', 'min:1'], 'category_ids.*' => ['integer', 'distinct', 'exists:categories,id'], 'excerpt' => ['required', 'string', 'max:320'], 'body' => ['required', 'string'], 'image_url' => ['nullable', 'url', 'max:500'], 'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'mobile_featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'tag_names' => ['nullable', 'string', 'max:2000'], 'is_featured' => ['nullable', 'boolean'], 'publish' => ['nullable', 'boolean'], 'is_spotlight' => ['nullable', 'boolean'], 'images' => ['nullable', 'array', 'max:12'], 'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240']], [
+        $data = $request->validate(['title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'string', 'max:180', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'], 'category_ids' => ['required', 'array', 'min:1'], 'category_ids.*' => ['integer', 'distinct', 'exists:categories,id'], 'excerpt' => ['nullable', 'string', 'max:320'], 'body' => ['required', 'string'], 'image_url' => ['nullable', 'url', 'max:500'], 'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'mobile_featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:1536'], 'tag_names' => ['nullable', 'string', 'max:2000'], 'is_featured' => ['nullable', 'boolean'], 'publish' => ['nullable', 'boolean'], 'is_spotlight' => ['nullable', 'boolean'], 'images' => ['nullable', 'array', 'max:12'], 'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:10240']], [
             'featured_image.max' => 'The main featured image must not exceed 1.5 MB.',
             'mobile_featured_image.max' => 'The mobile featured image must not exceed 1.5 MB.',
         ]);
