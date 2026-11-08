@@ -15,3 +15,4 @@
         @endif
     </div>
 @endforeach
+<div class="mobile-drawer-item"><div class="mobile-drawer-item-row"><a class="mobile-drawer-link {{ request()->routeIs('archive') ? 'active' : '' }}" href="{{ route('archive') }}">More</a></div></div>

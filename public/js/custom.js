@@ -1,4 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-archive-year]').forEach((year) => {
+        const toggle = year.querySelector('.archive-year-button');
+        const content = year.querySelector('.archive-year-content');
+        toggle?.addEventListener('click', () => {
+            const open = toggle.getAttribute('aria-expanded') !== 'true';
+            toggle.setAttribute('aria-expanded', String(open));
+            content.hidden = !open;
+        });
+
+        year.querySelectorAll('[data-archive-month]').forEach((month) => {
+            month.addEventListener('click', () => {
+                year.querySelectorAll('[data-archive-month]').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+                year.querySelectorAll('[data-archive-stories]').forEach((section) => { section.hidden = true; });
+                month.setAttribute('aria-pressed', 'true');
+                const stories = year.querySelector(`[data-archive-stories="${month.dataset.archiveMonth}"]`);
+                if (stories) stories.hidden = false;
+            });
+        });
+    });
+
     const spotlightCarousel = document.querySelector('#spotlightCarousel');
     spotlightCarousel?.addEventListener('slide.bs.carousel', (event) => {
         spotlightCarousel.querySelectorAll('.spotlight-arrow-enter').forEach((slide) => slide.classList.remove('spotlight-arrow-enter'));

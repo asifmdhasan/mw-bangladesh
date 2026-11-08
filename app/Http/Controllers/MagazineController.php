@@ -54,6 +54,19 @@ class MagazineController extends Controller
         return view('magazine.index', ['articles' => $articles->paginate(9)->withQueryString(), 'categories' => $this->categoryNavigation()]);
     }
 
+    public function archive(): View
+    {
+        $articlesByMonth = Article::with(['category', 'images'])
+            ->whereNotNull('published_at')
+            ->latest('published_at')
+            ->get()
+            ->groupBy(fn (Article $article) => $article->published_at->format('Y-m'));
+
+        $years = $articlesByMonth->keys()->map(fn ($key) => (int) substr($key, 0, 4))->unique()->sortDesc()->values();
+
+        return view('magazine.archive', compact('articlesByMonth', 'years'));
+    }
+
     public function searchSuggestions(Request $request): JsonResponse
     {
         $query = $request->query('q', '');
