@@ -46,7 +46,7 @@
                     </div>
                 @endif
             @endforeach
-            <a class="nav-link more-nav-link {{ request()->routeIs('archive') ? 'active' : '' }}" href="{{ route('archive') }}">More <span aria-hidden="true">⌄</span></a>
+            <a class="nav-link more-nav-link {{ request()->routeIs('archive') ? 'active' : '' }}" href="{{ route('archive') }}">More</a>
         </div></div></div></nav>
     </header>
     @if(isset($activeParentCategory) && $activeParentCategory->children->isNotEmpty())

@@ -18,7 +18,7 @@
                 <article class="archive-year" data-archive-year>
                     <button class="archive-year-button" type="button" aria-expanded="false" aria-controls="archive-months-{{ $year }}">
                         <span class="archive-year-number">{{ $year }}</span>
-                        <span class="archive-year-meta">{{ $yearCount }} {{ $yearCount === 1 ? 'story' : 'stories' }} <i aria-hidden="true"></i></span>
+                        <span class="archive-year-meta"><span class="archive-year-count">{{ $yearCount }} {{ $yearCount === 1 ? 'story' : 'stories' }}</span><span class="archive-year-action">VIEW MONTHS</span><i aria-hidden="true"></i></span>
                     </button>
                     <div class="archive-year-content" id="archive-months-{{ $year }}" hidden>
                         <div class="archive-months" aria-label="Months in {{ $year }}">
