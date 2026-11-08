@@ -1,4 +1,5 @@
 @foreach($categories as $category)
+    @if(strtolower($category->name) === 'more') @continue @endif
     <div class="mobile-drawer-item {{ $category->children->isNotEmpty() ? 'has-children' : '' }}">
         <div class="mobile-drawer-item-row">
             <a class="mobile-drawer-link {{ isset($activeParentCategory) && $activeParentCategory->is($category) ? 'active' : '' }}" href="{{ $category->url }}">{{ $category->name }}</a>

@@ -10,11 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         year.querySelectorAll('[data-archive-month]').forEach((month) => {
             month.addEventListener('click', () => {
-                year.querySelectorAll('[data-archive-month]').forEach((item) => item.setAttribute('aria-pressed', 'false'));
+                const open = month.getAttribute('aria-expanded') !== 'true';
+                year.querySelectorAll('[data-archive-month]').forEach((item) => item.setAttribute('aria-expanded', 'false'));
                 year.querySelectorAll('[data-archive-stories]').forEach((section) => { section.hidden = true; });
-                month.setAttribute('aria-pressed', 'true');
+                month.setAttribute('aria-expanded', String(open));
                 const stories = year.querySelector(`[data-archive-stories="${month.dataset.archiveMonth}"]`);
-                if (stories) stories.hidden = false;
+                if (stories) stories.hidden = !open;
             });
         });
     });

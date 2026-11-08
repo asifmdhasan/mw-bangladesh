@@ -32,6 +32,7 @@
         </div></div>
         <nav class="navbar navbar-expand-lg nav-strip"><div class="container"><button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button><div class="collapse navbar-collapse justify-content-center" id="mainNav"><div class="navbar-nav">
             @foreach($navigationCategories as $category)
+                @if(strtolower($category->name) === 'more') @continue @endif
                 @if($category->children->isEmpty())
                     <a class="nav-link" href="{{ $category->url }}">{{ $category->name }}</a>
                 @else

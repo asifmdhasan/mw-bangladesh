@@ -21,21 +21,17 @@
                         <span class="archive-year-meta"><span class="archive-year-count">{{ $yearCount }} {{ $yearCount === 1 ? 'story' : 'stories' }}</span><span class="archive-year-action">VIEW MONTHS</span><i aria-hidden="true"></i></span>
                     </button>
                     <div class="archive-year-content" id="archive-months-{{ $year }}" hidden>
-                        <div class="archive-months" aria-label="Months in {{ $year }}">
-                            @for($month = 1; $month <= 12; $month++)
-                                @php($monthKey = sprintf('%04d-%02d', $year, $month))
-                                @php($monthArticles = $articlesByMonth->get($monthKey, collect()))
-                                <button class="archive-month {{ $monthArticles->isEmpty() ? 'is-empty' : '' }}" type="button" data-archive-month="{{ $monthKey }}" aria-pressed="false" {{ $monthArticles->isEmpty() ? 'disabled' : '' }}>
-                                    <span>{{ \Illuminate\Support\Carbon::create((int) $year, $month, 1)->format('M') }}</span>
-                                    <small>{{ str_pad((string) $monthArticles->count(), 2, '0', STR_PAD_LEFT) }}</small>
-                                </button>
-                            @endfor
-                        </div>
                         @for($month = 1; $month <= 12; $month++)
                             @php($monthKey = sprintf('%04d-%02d', $year, $month))
                             @php($monthArticles = $articlesByMonth->get($monthKey, collect()))
-                            @if($monthArticles->isNotEmpty())
-                                <section class="archive-stories" data-archive-stories="{{ $monthKey }}" hidden>
+                            <div class="archive-month-row">
+                                <button class="archive-month" type="button" data-archive-month="{{ $monthKey }}" aria-expanded="false" aria-controls="archive-stories-{{ $monthKey }}">
+                                    <span>{{ \Illuminate\Support\Carbon::create((int) $year, $month, 1)->format('F') }}</span>
+                                    <small>{{ $monthArticles->count() }} {{ $monthArticles->count() === 1 ? 'post' : 'posts' }}</small>
+                                    <i aria-hidden="true"></i>
+                                </button>
+                                <section class="archive-stories" id="archive-stories-{{ $monthKey }}" data-archive-stories="{{ $monthKey }}" hidden>
+                                    @if($monthArticles->isNotEmpty())
                                     <div class="archive-stories-heading"><span>{{ \Illuminate\Support\Carbon::create((int) $year, $month, 1)->format('F Y') }}</span><small>{{ $monthArticles->count() }} {{ $monthArticles->count() === 1 ? 'story' : 'stories' }}</small></div>
                                     <div class="row g-3 archive-story-grid">
                                         @foreach($monthArticles as $article)
@@ -47,8 +43,11 @@
                                             </div>
                                         @endforeach
                                     </div>
+                                    @else
+                                        <p class="archive-month-empty">No stories were published this month.</p>
+                                    @endif
                                 </section>
-                            @endif
+                            </div>
                         @endfor
                     </div>
                 </article>
